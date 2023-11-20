@@ -1,38 +1,88 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import Toolbar from './components/Toolbar/Toolbar';
 import PostForm from './components/PostForm/PostForm';
 import Posts from './components/Posts/Posts';
 import {Post} from './types';
 
-const url = 'http://146.185.154.90:8000/messages';
+let BASE_URL = 'http://146.185.154.90:8000/messages';
+let datetime: string | null = null;
 
 function App() {
-  const [posts, setPosts] = useState<Post[]>([
-    {name: 'Sana', message: 'Hello, World!', id: '1'},
-    {name: 'Elon', message: 'Test Post!', id: '2'}
-  ]);
+  const [posts, setPosts] = useState<Post[]>([]);
 
-  const addPost = (post: Post) => {
-    setPosts((prevState) => [...prevState, post] )
+  useEffect(() => {
+    const fetchData = async () => {
+      let url = BASE_URL;
+
+      if (datetime !== null) {
+        url += '?datetime=' + datetime;
+      }
+
+      try {
+        const response = await fetch(url);
+
+        if (!response.ok) {
+          throw new Error('Network error: ' + response.status);
+        }
+
+        const newPosts: Post[] = await response.json();
+
+        if (newPosts.length > 0) {
+          const lastPost = newPosts[newPosts.length - 1];
+          datetime = lastPost.datetime;
+          setPosts((prevPosts) => [...prevPosts, ...newPosts]);
+        }
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+      }
+    };
+    void fetchData();
+    const intervalId = setInterval(fetchData, 2000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []);
+
+  const createPost = async (post: Post) => {
+    const data = new URLSearchParams();
+    data.set('id', post.id);
+    data.set('author', post.author);
+    data.set('message', post.message);
+    data.set('datetime', post.datetime);
+
+    try {
+      const response = await fetch(BASE_URL, {
+        method: 'POST',
+        body: data,
+      });
+
+      if (response.ok) {
+        console.log('Post created successfully!');
+      } else {
+        console.error('Failed to create post');
+      }
+    } catch (error) {
+      console.error('Error creating post:', error);
+    }
   };
+
 
   return (
     <>
       <header>
         <Toolbar/>
       </header>
-
       <main className="container-fluid">
-        <div className="row mt-2">
+        <div className="mt-2 row">
           <div className="col-4">
-            <PostForm onSubmit={addPost}/>
+            <PostForm onSubmit={createPost}/>
           </div>
           <div className="col-4">
             <Posts posts={posts}/>
           </div>
         </div>
       </main>
-
     </>
   );
 }

@@ -1,10 +1,11 @@
 export interface Post {
   id: string;
-  name: string;
+  author: string;
   message: string;
+  datetime: string;
 }
 
 export interface PostMutation {
-  name: string;
+  author: string;
   message: string;
 }

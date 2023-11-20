@@ -1,14 +1,13 @@
 import React, {useState} from 'react';
 import {Post, PostMutation} from '../../types';
 
-
 interface Props {
   onSubmit: (post: Post) => void;
 }
 
 const PostForm: React.FC<Props> = ({onSubmit}) => {
   const [post, setPost] = useState<PostMutation>({
-    name: '',
+    author: '',
     message: '',
   });
 
@@ -19,27 +18,30 @@ const PostForm: React.FC<Props> = ({onSubmit}) => {
     }));
   };
 
+
   const onFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit({
       id: Math.random().toString(),
       ...post,
+      datetime: new Date().toISOString(),
     });
+    setPost({author: '', message: ''});
   };
-
 
   return (
     <form onSubmit={onFormSubmit}>
       <h4>Add new message</h4>
       <div className="form-group">
-        <label htmlFor="name">Name</label>
+        <label htmlFor="author">Author</label>
         <input
           type="text"
-          name="name"
-          id="name"
+          name="author"
+          id="author"
           className="form-control"
-          value={post.name}
+          value={post.author}
           onChange={changePost}
+          required
         />
       </div>
       <div className="form-group">
@@ -50,6 +52,7 @@ const PostForm: React.FC<Props> = ({onSubmit}) => {
           className="form-control"
           value={post.message}
           onChange={changePost}
+          required
         />
       </div>
       <button type="submit" className="btn btn-primary mt-2">Create</button>
@@ -58,3 +61,8 @@ const PostForm: React.FC<Props> = ({onSubmit}) => {
 };
 
 export default PostForm;
+
+
+
+
+

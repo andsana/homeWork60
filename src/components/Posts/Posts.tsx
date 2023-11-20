@@ -1,7 +1,6 @@
 import React from 'react';
 import PostItem from './PostItem';
 import {Post} from '../../types';
-
 interface Props {
   posts: Post[];
 }
